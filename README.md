@@ -7,3 +7,5 @@ The work proposes a novel maximum spanning tree based Image segmentation leverag
 The work also proposes an efficient similarity measure between pixel segments that have a complexity linear in numver of bins in color space.
 
 The results demonstrates the effectiveness of the method.
+
+We worked with two low-level segmentation approaches, Mean-Shift and SLIC and found out that Mean-Shift gives better segments.
