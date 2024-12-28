@@ -14,6 +14,8 @@ We used two datasets:
 ### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/KaustubhShejole/ImageSegmentationUsingGraphTheory/
+```
+```bash
 cd ImageSegmentationUsingGraphTheory/Code_using_MeanShift
 ```
 
@@ -65,7 +67,7 @@ Place your input images in the following path:
 │   │   ├── Code_using_MeanShift/
 
 You can change the input paths according to your convenience.
-
+```
 ### Step 2: Creating Necessary Output Directories
 The `parameters_and_data.py` script automatically creates the required directories under `results/` if they don't exist:
 
