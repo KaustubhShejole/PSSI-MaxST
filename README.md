@@ -43,7 +43,7 @@ python -c "import cv2, numpy, matplotlib, skimage"
 
 ## **Running the Scripts**
 ### Step 1: Prepare Input Data
-- Place your flower images in `../../final_research/flower_segmentation_dataset/flowers/`.
+- Place your images in `../../final_research/flower_segmentation_dataset/flowers/`.
 - Place your corresponding masks in `../../final_research/flower_segmentation_dataset/masks/`.
 
 i.e. 
