@@ -5,6 +5,7 @@ Image segmentation plays a crucial role in applications such as object detection
 We used two datasets:
 1. Oxford 102 flower dataset: https://www.robots.ox.ac.uk/~vgg/data/flowers/102/
 2. EG1800 Portrait Dataset available at: https://drive.google.com/file/d/18xM3jU2dSp1DiDqEM6PVXattNMZvsX4z/view?usp=sharing
+3. MS COCO dataset: https://cocodataset.org/#home
 
 ---
 
