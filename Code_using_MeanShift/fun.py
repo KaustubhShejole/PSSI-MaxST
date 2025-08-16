@@ -1,3 +1,4 @@
+from scipy.ndimage import convolve1d
 import time
 import heapq
 from tkinter import messagebox
@@ -12,7 +13,7 @@ import numpy as np
 # from parameters_and_data import num_superpixels_parameter, compactness
 
 # data
-from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, original_image, num_superpixels_parameter
+# from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, original_image, num_superpixels_parameter
 
 # Define a function to get the label (cluster) at a specific point
 import os
@@ -152,21 +153,58 @@ def precompute_superpixel_indices(labels_slic):
     return superpixel_indices
 
 
+def precompute_superpixel_indices_modified(labels_slic):
+    """
+    Returns a dict mapping each superpixel label to a tuple of (rows, cols),
+    computed in a single sort-and-split pass.
+    """
+    H, W = labels_slic.shape
+    flat_labels = labels_slic.ravel()
+    flat_inds = np.arange(flat_labels.size)
+
+    # Sort pixel indices by their label
+    order = np.argsort(flat_labels)
+    sorted_lbls = flat_labels[order]
+
+    # Find the boundaries where the label changes
+    boundaries = np.nonzero(np.diff(sorted_lbls))[0] + 1
+
+    # Split the ordered indices into one array per label
+    groups = np.split(order, boundaries)
+
+    # Build the mapping from label->(row_indices, col_indices)
+    superpixel_indices = {}
+    # The unique labels in sorted order:
+    unique_labels = sorted_lbls[np.concatenate([[0], boundaries])]
+
+    for lbl, inds in zip(unique_labels, groups):
+        rows = inds // W
+        cols = inds % W
+        superpixel_indices[int(lbl)] = (rows, cols)
+
+    return superpixel_indices
+
 def compute_normalized_histogram4(image, superpixel_indices, superpixel_label):
-    sample_fraction = 0.1
+    # sample_fraction = 1.0
+    # indices = superpixel_indices[superpixel_label]
+
+    # # Number of pixels in the superpixel
+
+    # # Sample a subset of the indices to reduce complexity
+    # sample_size = int(num_pixels * sample_fraction)
+    # if sample_size < 1:
+    #     sample_size = 1  # Ensure at least one pixel is sampled
+
+    # sampled_indices = np.random.choice(num_pixels, sample_size, replace=False)
+    # sampled_pixels = image[indices[0]
+    #                        [sampled_indices], indices[1][sampled_indices]]
+    # Get all indices of the superpixel
     indices = superpixel_indices[superpixel_label]
-
-    # Number of pixels in the superpixel
     num_pixels = len(indices[0])
+    sample_size = num_pixels
 
-    # Sample a subset of the indices to reduce complexity
-    sample_size = int(num_pixels * sample_fraction)
-    if sample_size < 1:
-        sample_size = 1  # Ensure at least one pixel is sampled
-
-    sampled_indices = np.random.choice(num_pixels, sample_size, replace=False)
-    sampled_pixels = image[indices[0]
-                           [sampled_indices], indices[1][sampled_indices]]
+    # Use all the pixels in the superpixel
+    sampled_pixels = image[indices[0], indices[1]]
     # Calculate histogram for each channel separately
     hist_r, _ = np.histogram(sampled_pixels[:, 0], bins=8, range=(0, 255))
     hist_g, _ = np.histogram(sampled_pixels[:, 1], bins=8, range=(0, 255))
@@ -228,6 +266,69 @@ def compute_normalized_histogram4(image, superpixel_indices, superpixel_label):
     # return superpixel_histogram_normalized
     return 0
 
+
+def compute_normalized_histogram4_optimized(image, superpixel_indices, superpixel_label, num_bins=8, alpha=1.0):
+    """
+    Computes a Laplace-smoothed, normalized RGB histogram for one superpixel.
+    Returns a list of three arrays (hist_r, hist_g, hist_b), each of length num_bins.
+    """
+    rows, cols = superpixel_indices[superpixel_label]
+    pixels = image[rows, cols]  # shape (n_pixels, 3)
+    n = pixels.shape[0]
+
+    # Compute histograms and apply Laplace smoothing + normalization
+    histograms = []
+    for c in range(3):  # for R, G, B channels
+        h, _ = np.histogram(pixels[:, c], bins=num_bins, range=(0, 255))
+        # Laplace smoothing
+        h = (h + alpha) / (n + alpha * num_bins)
+        histograms.append(h)
+
+    return histograms
+
+
+import numpy as np
+
+
+def similarity_coefficient_calculator_and_value_returner4_optimized(
+    histograms, cluster_label, cluster_label1, lambda_parameter
+):
+    # Compute normalized histograms
+    superpixel_histogram_normalized = histograms[cluster_label]
+    superpixel_histogram_normalized1 =histograms[cluster_label1]
+
+    # Convert to NumPy arrays for vectorized operations
+    p = np.array(superpixel_histogram_normalized)
+    q = np.array(superpixel_histogram_normalized1)
+    num_channels, num_bins = p.shape
+
+    # Parameters
+    lambda_parameter = 0.2
+
+    # Base term: p_jk * q_jk for all bins and channels
+    base_term = np.sum(p * q, axis=1)
+
+    # Middle bins (1 to num_bins-2): λ * (p_jk * q_j(k+1) + p_jk * q_j(k-1))
+    if num_bins > 2:
+        middle = p[:, 1:-1] * (lambda_parameter *
+                               q[:, :-2] + lambda_parameter * q[:, 2:])
+        middle_term = np.sum(middle, axis=1)
+    else:
+        middle_term = np.zeros(num_channels)
+
+    # First bin: λ * p_j0 * q_j1
+    first_bin_term = np.zeros(num_channels)
+    if num_bins > 1:
+        first_bin_term = lambda_parameter * p[:, 0] * q[:, 1]
+
+    # Combine all terms and compute square root
+    total = base_term + middle_term + first_bin_term
+    individual_coeffs = np.sqrt(total)
+
+    # Compute harmonic mean efficiently
+    harmonic_mean = len(individual_coeffs) / np.sum(1.0 / individual_coeffs)
+
+    return 100 * harmonic_mean
 
 def compute_normalized_histogram(image, labels_slic, superpixel_label):
     # Mask to select pixels belonging to the specified superpixel
@@ -459,6 +560,9 @@ def similarity_coefficient_calculator_and_value_returner4(superpixel_indices, im
     return 100*similarity_index_between_superpixels
 
 
+
+
+
 # def get_superpixel_information(labels_slic, neighbors_in_superpixels):
 #     num_nodes = len(neighbors_in_superpixels)
 #     for each_node in range(num_nodes):
@@ -578,14 +682,15 @@ def fill_neighbors_6(labels_slic, superpixel_indices, num_superpixels):
             if sample_size < 1:
                 sample_size = 1  # Ensure at least one pixel is sampled
 
-            sampled_indices = np.random.choice(
-                num_pixels, sample_size, replace=False)
-            sampled_pixels = (
-                indices[0][sampled_indices], indices[1][sampled_indices])
+            # sampled_indices = np.random.choice(
+            #     num_pixels, sample_size, replace=False)
+            # sampled_pixels = (
+            #     indices[0][sampled_indices], indices[1][sampled_indices])
+            sampled_pixels = (indices[0], indices[1])
 
             # Collect neighboring superpixels
             neighboring_superpixels = set()
-
+            num_superpixels_parameter = 13
             length_to_see = num_superpixels_parameter // 4
             for y, x in zip(sampled_pixels[0], sampled_pixels[1]):
                 neighboring_points = [
@@ -610,6 +715,221 @@ def fill_neighbors_6(labels_slic, superpixel_indices, num_superpixels):
 
     except Exception as e:
         print(e)
+    return [list(neighbors) for neighbors in neighbors_in_superpixels]
+
+
+# def fill_neighbors_6_optimized(labels_slic, superpixel_indices, num_superpixels):
+#     """
+#     Compute the adjacency list for superpixels in a 2D label image.
+    
+#     Args:
+#         labels_slic (ndarray): H×W array of superpixel labels.
+#         superpixel_indices (list of tuple): Not used in this implementation,
+#             kept for compatibility.
+#         num_superpixels (int): Number of superpixel labels (max label + 1).
+    
+#     Returns:
+#         list of lists: neighbors[i] is a list of superpixel labels adjacent to i.
+#     """
+#     H, W = labels_slic.shape
+#     # Initialize adjacency sets
+#     adj = [set() for _ in range(num_superpixels)]
+
+#     # Compare each pixel to its right neighbor
+#     right_diff = labels_slic[:, :-1] != labels_slic[:, 1:]
+#     ys, xs = np.nonzero(right_diff)
+#     for y, x in zip(ys, xs):
+#         a = labels_slic[y, x]
+#         b = labels_slic[y, x + 1]
+#         if a < num_superpixels and b < num_superpixels and a != b:
+#             adj[a].add(b)
+#             adj[b].add(a)
+
+#     # Compare each pixel to its bottom neighbor
+#     down_diff = labels_slic[:-1, :] != labels_slic[1:, :]
+#     ys, xs = np.nonzero(down_diff)
+#     for y, x in zip(ys, xs):
+#         a = labels_slic[y, x]
+#         b = labels_slic[y + 1, x]
+#         if a < num_superpixels and b < num_superpixels and a != b:
+#             adj[a].add(b)
+#             adj[b].add(a)
+
+#     # Convert sets to sorted lists for consistency
+#     neighbors = [sorted(list(s)) for s in adj]
+#     return neighbors
+
+import numpy as np
+
+def fill_neighbors_6_optimized1(labels_slic, superpixel_indices, num_superpixels):
+    # Precompute constants and image dimensions
+    num_superpixels_parameter = 13
+    length_to_see = num_superpixels_parameter // 4
+    h, w = labels_slic.shape[:2]
+    
+    # Precompute neighbor offsets as NumPy array
+    offsets = np.array([
+        (length_to_see, length_to_see),
+        (-length_to_see, length_to_see),
+        (length_to_see, -length_to_see),
+        (-length_to_see, -length_to_see),
+        (0, length_to_see),
+        (0, -length_to_see),
+        (length_to_see, 0),
+        (-length_to_see, 0)
+    ])
+    
+    neighbors_in_superpixels = [set() for _ in range(num_superpixels)]
+    
+    try:
+        for i in range(num_superpixels):
+            indices = superpixel_indices[i]
+            rows, cols = indices[0], indices[1]
+            num_pixels = len(rows)
+            
+            if num_pixels == 0:
+                continue
+                
+            # Create all candidate neighbor coordinates
+            neighbor_y = rows[:, None] + offsets[:, 0]
+            neighbor_x = cols[:, None] + offsets[:, 1]
+            
+            # Flatten coordinate arrays
+            all_y = neighbor_y.ravel()
+            all_x = neighbor_x.ravel()
+            
+            # Validate coordinates in bulk
+            valid_mask = (all_y >= 0) & (all_y < h) & (all_x >= 0) & (all_x < w)
+            valid_y = all_y[valid_mask]
+            valid_x = all_x[valid_mask]
+            
+            if len(valid_y) == 0:
+                continue
+                
+            # Get labels at valid positions
+            neighbor_labels = labels_slic[valid_y, valid_x]
+            
+            # Filter out current superpixel and get unique neighbors
+            mask_non_i = neighbor_labels != i
+            unique_neighbors = set(neighbor_labels[mask_non_i])
+            
+            # Update neighbor relationships
+            neighbors_in_superpixels[i] |= unique_neighbors
+            for nbr in unique_neighbors:
+                neighbors_in_superpixels[nbr].add(i)
+                
+    except Exception as e:
+        print(f"Error: {e}")
+        
+    return [list(neighbors) for neighbors in neighbors_in_superpixels]
+
+
+def fill_neighbors_custom_offset(labels_slic, superpixel_indices, num_superpixels, length_to_see=3):
+    """
+    Finds neighboring superpixels using fixed-length offsets (not 4- or 8-connectivity).
+
+    Args:
+        labels_slic (ndarray): 2D array of superpixel labels.
+        superpixel_indices (dict): {label: (row_indices, col_indices)}
+        num_superpixels (int): Total number of superpixels.
+        length_to_see (int): Offset step for neighbor probing.
+
+    Returns:
+        List of neighboring superpixels for each label.
+    """
+    h, w = labels_slic.shape
+    neighbors_in_superpixels = [set() for _ in range(num_superpixels)]
+
+    # Fixed directional offsets (your custom scheme)
+    offsets = np.array([
+        (length_to_see, length_to_see),
+        (-length_to_see, length_to_see),
+        (length_to_see, -length_to_see),
+        (-length_to_see, -length_to_see),
+        (0, length_to_see),
+        (0, -length_to_see),
+        (length_to_see, 0),
+        (-length_to_see, 0)
+    ], dtype=np.int32)
+
+    for label, (rows, cols) in superpixel_indices.items():
+        if len(rows) == 0:
+            continue
+
+        # Convert to array for vector ops
+        rows = np.asarray(rows)
+        cols = np.asarray(cols)
+
+        # Apply each offset in batch
+        for dy, dx in offsets:
+            y = rows + dy
+            x = cols + dx
+
+            # Keep only valid pixel indices
+            valid = (y >= 0) & (y < h) & (x >= 0) & (x < w)
+            y = y[valid]
+            x = x[valid]
+
+            if len(y) == 0:
+                continue
+
+            neighbor_labels = labels_slic[y, x]
+            neighbor_labels = neighbor_labels[neighbor_labels != label]
+
+            unique_neighbors = np.unique(neighbor_labels)
+            neighbors_in_superpixels[label].update(unique_neighbors)
+            for nbr in unique_neighbors:
+                neighbors_in_superpixels[nbr].add(label)
+
+    return [list(nbrs) for nbrs in neighbors_in_superpixels]
+
+
+def fill_neighbors_6_optimized(labels_slic, superpixel_indices, num_superpixels):
+    # Precompute constants and image dimensions
+    num_superpixels_parameter = 13
+    length_to_see = num_superpixels_parameter // 4
+    h, w = labels_slic.shape[:2]
+
+    # Precompute neighbor offsets
+    offsets = (
+        (length_to_see, length_to_see),
+        (-length_to_see, length_to_see),
+        (length_to_see, -length_to_see),
+        (-length_to_see, -length_to_see),
+        (0, length_to_see),
+        (0, -length_to_see),
+        (length_to_see, 0),
+        (-length_to_see, 0)
+    )
+
+    neighbors_in_superpixels = [set() for _ in range(num_superpixels)]
+    try:
+        for i in range(num_superpixels):
+            indices = superpixel_indices[i]
+            rows, cols = indices[0], indices[1]
+            num_pixels = len(rows)
+            neighboring_superpixels = set()
+
+            # Process all pixels in the superpixel
+            for idx in range(num_pixels):
+                y, x = rows[idx], cols[idx]
+                # Check all neighbor positions
+                for dy, dx in offsets:
+                    yy = y + dy
+                    xx = x + dx
+                    if 0 <= yy < h and 0 <= xx < w:
+                        label = labels_slic[yy, xx]
+                        if label != i:
+                            neighboring_superpixels.add(label)
+
+            # Update neighbor relationships
+            neighbors_in_superpixels[i].update(neighboring_superpixels)
+            for neighbor in neighboring_superpixels:
+                neighbors_in_superpixels[neighbor].add(i)
+
+    except Exception as e:
+        print(e)
+
     return [list(neighbors) for neighbors in neighbors_in_superpixels]
 
 
@@ -1155,6 +1475,15 @@ def bhattacharyya_similarity_coefficient_calculator(superpixel_indices, image, c
     
     return np.sum(np.sqrt(superpixel_histogram_normalized * superpixel_histogram_normalized1))
 
+
+def bhattacharyya_similarity_coefficient_calculator_optimized(histograms, cluster_label, cluster_label1):
+    # color_superpixels(image,superpixel_indices)
+    # exit()
+    superpixel_histogram_normalized = histograms[cluster_label]
+    superpixel_histogram_normalized1 = histograms[cluster_label1]
+    
+    return np.sum(np.sqrt(superpixel_histogram_normalized * superpixel_histogram_normalized1))
+
 def similarity_coefficient_calculator_and_value_returner(labels_slic, image, cluster_label, cluster_label1, superpixel_centroids):
     superpixel_histogram_normalized = compute_normalized_histogram(
         image, labels_slic, cluster_label)
@@ -1501,7 +1830,7 @@ def helper3(image, maximum_spanning_tree, label_slic):
     return segmented_image
 
 
-def helper31(image, maximum_spanning_tree, label_slic):
+def helper31(image, maximum_spanning_tree, labels_slic):
     alpha = 0.5
     color = np.array([0, 0, 255], dtype=np.float32)
     image_height, image_width = image.shape[:2]
@@ -1537,11 +1866,11 @@ def helper31(image, maximum_spanning_tree, label_slic):
     # Display the segmented image
     # segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB)
 
-    plt.imshow(segmented_image)
-    # plt.imsave('flower_segmentation_dataset/segmented/1.png',
-    #            segmented_image)
-    plt.axis('off')
-    plt.show()
+    # plt.imshow(segmented_image)
+    # # plt.imsave('flower_segmentation_dataset/segmented/1.png',
+    # #            segmented_image)
+    # plt.axis('off')
+    # plt.show()
     return segmented_image
 
 
@@ -1645,7 +1974,8 @@ def generate_mask1(image, maximum_spanning_tree, label_slic):
     # plt.imsave('images/Mona_Lisa_mask.jpg',
     #            segmented_image)
     plt.axis('off')
-    plt.show()
+    # plt.show()
+    plt.close()
     return segmented_image
 
 
@@ -1663,3 +1993,172 @@ def find_critical_edges(mst, a, b):
         critical_edges.append((u, v, weight))
 
     return critical_edges
+
+
+def find_critical_edges_modified(mst, a, b):
+    """
+    Since `mst` is a tree, there is exactly one simple path from a to b.
+    We do an unweighted DFS to recover that path, then collect edge weights.
+    """
+    # Build a lightweight adjacency list
+    adj = {u: list(mst[u]) for u in mst.nodes()}
+
+    # DFS to find parents
+    parent = {a: None}
+    stack = [a]
+    while stack and b not in parent:
+        u = stack.pop()
+        for v in adj[u]:
+            if v not in parent:
+                parent[v] = u
+                stack.append(v)
+
+    # Reconstruct the unique path a → … → b
+    if b not in parent:
+        raise ValueError(f"No path found between {a} and {b} in the MST")
+    path = []
+    node = b
+    while node is not None:
+        path.append(node)
+        node = parent[node]
+    path.reverse()
+
+    # Gather the edges (u, v, weight) along that path
+    critical_edges = [
+        (u, v, mst[u][v]['weight'])
+        for u, v in zip(path, path[1:])
+    ]
+    return critical_edges
+
+
+def compute_laplace_histograms(image, superpixel_indices, num_bins=8, alpha=1.0):
+    """
+    For each superpixel label, compute a Laplace-smoothed normalized histogram
+    of each channel. Returns an array of shape (num_superpixels, 3, num_bins).
+    
+    Args:
+        image: H×W×3 uint8 image array.
+        superpixel_indices: dict[label] -> (rows, cols) of that superpixel.
+        num_bins: number of bins per channel.
+        alpha: Laplace smoothing constant.
+    """
+    num_superpixels = max(superpixel_indices.keys()) + 1
+    histograms = np.zeros((num_superpixels, 3, num_bins), dtype=np.float32)
+
+    # Build each superpixel’s histogram
+    for lbl, (rows, cols) in superpixel_indices.items():
+        pixels = image[rows, cols]  # shape (n_pixels, 3)
+        n = pixels.shape[0]
+        for c in range(3):
+            # Raw histogram
+            h, _ = np.histogram(pixels[:, c], bins=num_bins, range=(0, 255))
+            # Laplace smoothing + normalize
+            histograms[lbl, c] = (h + alpha) / (n + alpha * num_bins)
+
+    return histograms
+
+
+def compute_normalized_histograms(image, superpixel_indices, num_bins=8):
+    """
+    Compute normalized histograms (without Laplace smoothing) for all superpixels.
+    Returns an array of shape (num_superpixels, 3, num_bins).
+
+    Args:
+        image: H×W×3 uint8 image array.
+        superpixel_indices: dict[label] -> (rows, cols) for each superpixel.
+        num_bins: Number of histogram bins per channel (default 8).
+
+    Returns:
+        histograms: ndarray of shape (num_superpixels, 3, num_bins), containing
+                    normalized histograms with small constant offset added.
+    """
+    num_superpixels = max(superpixel_indices.keys()) + 1
+    histograms = np.zeros((num_superpixels, 3, num_bins), dtype=np.float32)
+
+    for label, (rows, cols) in superpixel_indices.items():
+        sampled_pixels = image[rows, cols]  # shape: (n_pixels, 3)
+        num_pixels = sampled_pixels.shape[0]
+        if num_pixels == 0:
+            continue  # avoid divide-by-zero
+
+        for c in range(3):  # R, G, B
+            hist, _ = np.histogram(
+                sampled_pixels[:, c], bins=num_bins, range=(0, 255))
+            histograms[label, c] = hist / num_pixels + \
+                0.001  # normalization with offset
+
+    return histograms
+
+def sips_similarity(histograms, i, j, lambda_param=0.2):
+    """
+    Compute the SIPS similarity between superpixels i and j.
+
+    Args:
+        histograms: array of shape (num_superpixels, 3, num_bins)
+        i, j: indices of the two superpixels.
+        lambda_param: weight for neighboring-bin contribution.
+
+    Returns:
+        sips: float similarity in [0,1].
+    """
+    hi = histograms[i]   # shape (3, B)
+    hj = histograms[j]   # shape (3, B)
+    kernel = np.array([lambda_param, 1.0, lambda_param], dtype=hi.dtype)
+
+    sim_channels = []
+    # for each color channel
+    for c in range(3):
+        # include ±1-bin contributions via 1D convolution
+        w1 = convolve1d(hi[c], kernel, mode='constant', cval=0.0)
+        w2 = convolve1d(hj[c], kernel, mode='constant', cval=0.0)
+        # sum of sqrt products
+        sim_c = np.sqrt(w1 * w2).sum()
+        sim_channels.append(sim_c)
+
+    sim_arr = np.array(sim_channels)
+    # harmonic mean across channels
+    sips = len(sim_arr) / np.sum(1.0 / sim_arr)
+    return sips
+
+
+def similarity_coefficient_calculator_and_value_returner4_from_histograms(
+    histograms, cluster_label, cluster_label1, lambda_parameter=0.2
+):
+    """
+    Computes the SIPS similarity between two superpixels using precomputed histograms.
+
+    Args:
+        histograms: dict[label] -> [hist_r, hist_g, hist_b], each hist of shape (num_bins,)
+        cluster_label: index of first superpixel
+        cluster_label1: index of second superpixel
+        lambda_parameter: bin-neighbor smoothing factor (default 0.2)
+
+    Returns:
+        similarity index scaled by 100
+    """
+    hist1 = histograms[cluster_label]
+    hist2 = histograms[cluster_label1]
+
+    num_channels = len(hist1)
+    num_bins = len(hist1[0])
+    individual_similarity_coefficient = []
+
+    for channel in range(num_channels):
+        h1 = hist1[channel]
+        h2 = hist2[channel]
+        channel_sum = 0.0
+
+        for b in range(num_bins):
+            main_term = h1[b] * h2[b]
+            left_term = h1[b] * h2[b - 1] if b > 0 else 0
+            right_term = h1[b] * h2[b + 1] if b < num_bins - 1 else 0
+            channel_sum += main_term + \
+                lambda_parameter * (left_term + right_term)
+
+        individual_similarity_coefficient.append(np.sqrt(channel_sum))
+
+    # Harmonic mean of the similarity coefficients
+    inv_sum = sum(1.0 / coeff for coeff in individual_similarity_coefficient)
+    similarity_index_between_superpixels = num_channels / inv_sum
+
+    return 100.0 * similarity_index_between_superpixels

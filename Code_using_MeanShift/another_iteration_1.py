@@ -7,6 +7,7 @@ from fun import get_cluster_at_point
 
 
 file_to_show_path = seg_img_path+'_1_1_' + str(iteration_count_1) + '.png'
+
 original_image = cv2.imread(file_to_show_path)
 original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 image_rgb = np.copy(original_image)

@@ -1,35 +1,56 @@
-import time
-from parameters_and_data import image_rgb, path_to_add, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
-from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path, image_num
-from parameters_and_data import only_segmentation_path, segment_generation_time
-
-import networkx as nx
-import copy
-import math
-import matplotlib.pyplot as plt
-from fun import run_method_1, run_method_2
-import cv2
-import numpy as np
 from fun import fill_neighbors, generate_mask, get_cluster_at_point, get_superpixels_by_pixels, get_neighboring_superpixels, compute_normalized_histogram, get_unique_filename, graph_maker, helper, helper1, helper2, helper3, similarity_coefficient_calculator_and_value_returner, choose_method
-# hyperparameters
-# from parameters_and_data import num_superpixels_parameter, compactness
-superpixel_centroids = []
-print(num_superpixels)
+import cv2
+from fun import run_method_1, run_method_2
+import matplotlib.pyplot as plt
+import math
+import copy
+import networkx as nx
+import time
+import numpy as np
+import sys
+image_num = sys.argv[1]
+# image_num = 153077
+print(f"Processing {image_num}")
 
-scribbles_from = 'our_markers_250_images'
-# data
-with open('frontend_ui.py', 'r') as f:
+printing = False
+
+with open('parameters_and_data.py', 'r') as f:
     code = f.read()
 
 # Execute the code using exec()
-exec(code)
+exec(code, globals())
 
 
-# with open('frontend_ui1.py', 'r') as f:
+ground_img = cv2.imread(ground_truth_path)
+plt.imshow(ground_img)
+plt.show()
+plt.close()
+
+# from parameters_and_data import image_rgb, path_to_add, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
+# from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path
+# from parameters_and_data import only_segmentation_path, segment_generation_time
+
+# hyperparameters
+# from parameters_and_data import num_superpixels_parameter, compactness
+superpixel_centroids = []
+# data
+# with open('frontend_ui.py', 'r') as f:
 #     code = f.read()
 
 # # Execute the code using exec()
 # exec(code)
+
+# scribbles_from = 'one-cut'
+# scribbles_from = 'amoe'
+# scribbles_from = 'grabcut'
+# scribbles_from = 'grabcut_large'
+scribbles_from = 'our_markers_images250'
+
+with open('frontend_ui.py', 'r') as f:
+    code = f.read()
+
+# Execute the code using exec()
+exec(code, globals())
 # exit()
 
 image = image_rgb
@@ -68,7 +89,7 @@ if (user_choice == 1):
         code = f.read()
 
     # Execute the code using exec()
-    exec(code)
+    exec(code, globals())
 
     # code = ''
     # with open('analysis_compare.py', 'r') as f:

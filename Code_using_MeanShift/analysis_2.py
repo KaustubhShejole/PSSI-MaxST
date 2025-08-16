@@ -1,10 +1,10 @@
 import json
 import numbers
 import time
-from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
-from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path, image_num
+# from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
+# from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path, image_num
 
-from parameters_and_data import mask_img_path2, seg_img_path2, scribbled_img_path2, only_segmentation_path, image_num, segment_generation_time
+# from parameters_and_data import mask_img_path2, seg_img_path2, scribbled_img_path2, only_segmentation_path, image_num, segment_generation_time
 import networkx as nx
 import copy
 import math
@@ -116,7 +116,8 @@ def image_mask_max_flow(image, f, b, labels_slic):
     # plt.imsave('flower_segmentation_dataset/segmented/1.png',
     #            segmented_image)
     plt.axis('off')
-    plt.show()
+    # plt.show()
+    plt.close()
     return segmented_image
 
 
@@ -142,7 +143,8 @@ def image_segmentation_max_flow(image, f, b, labels_slic):
     # plt.imsave('flower_segmentation_dataset/segmented/1.png',
     #            segmented_image)
     plt.axis('off')
-    plt.show()
+    # plt.show()
+    plt.close()
     return segmented_image
 
 
@@ -263,23 +265,26 @@ segmentation_image = image_segmentation_max_flow(
     image, foreground_set, background_set, labels_slic)
 plt.imshow(segmentation_image)
 plt.imsave(seg_img_path2 +
-           str(iteration_count_2) + '.png',
+           str(iteration_count_2) + scribbles_from + '.png',
            segmentation_image)
 plt.axis('off')
-plt.show()
+# plt.show()
+plt.close()
 
 
 mask1 = image_mask_max_flow(
     image, foreground_set, background_set, labels_slic)
 plt.imshow(mask1)
-plt.imsave(mask_img_path2 + str(iteration_count_2) + '.png',
+plt.imsave(mask_img_path2 + str(iteration_count_2) + scribbles_from + '.png',
            mask1)
 plt.axis('off')
-plt.show()
+# plt.show()
+plt.close()
 
 elapsed_time_4_list = []
 while True:
-    continue_response = ask_to_continue()
+    # continue_response = ask_to_continue()
+    continue_response = False
     if continue_response:
         '''
         code of another iteration

@@ -88,17 +88,156 @@ maximum_spanning_tree = nx.maximum_spanning_tree(G1)
 # helper(maximum_spanning_tree)
 # maximum_spanning_tree = nx.maximum_spanning_tree(G1)
 
-critical_edges = find_critical_edges(
-    maximum_spanning_tree, 'background', 'foreground')
-helper6(critical_edges, maximum_spanning_tree)
-# Your code to be measured goes here
+# critical_edges = find_critical_edges(
+#     maximum_spanning_tree, 'background', 'foreground')
+# helper6(critical_edges, maximum_spanning_tree)
+# # Your code to be measured goes here
+
+
+def graph_maker1(num_superpixels):
+    G = nx.DiGraph()
+    for i in range(num_superpixels):
+        G.add_node(i)
+    return G
+
+
+def convert_to_directed_graph_with_checks1(G):
+    directed_G = nx.DiGraph()
+    dummy_count = 1
+
+    for u, v, data in G.edges(data=True):
+        weight = data.get('weight', 1)  # Default weight is 1 if not specified
+
+        # Apply rule 1 if either node is 'background'
+        if u == 'background':
+            directed_G.add_edge('background', v, weight=weight)
+        elif v == 'background':
+            directed_G.add_edge('background', u, weight=weight)
+
+        # Apply rule 2 if either node is 'foreground'
+        elif u == 'foreground':
+            directed_G.add_edge(v, 'foreground', weight=weight)
+        elif v == 'foreground':
+            directed_G.add_edge(u, 'foreground', weight=weight)
+
+        # Apply rule 3 for standard nodes
+        else:
+            # Add the direct edge
+            directed_G.add_edge(u, v, weight=weight)
+
+            # Create the dummy node and additional edges
+            dummy_node = f"node{dummy_count}"
+            directed_G.add_edge(v, dummy_node, weight=weight)
+            directed_G.add_edge(dummy_node, u, weight=weight)
+
+            dummy_count += 1
+
+    return directed_G
+
+
+def apply_translucent_scribble(image, x, y, scribble_color, alpha):
+    current_color = image[y, x]
+
+    # Blend the scribble color with the current color using alpha blending
+    result_color = [
+        (1 - alpha / 255.0) *
+        current_color[0] + (alpha / 255.0) * scribble_color[0],
+        (1 - alpha / 255.0) *
+        current_color[1] + (alpha / 255.0) * scribble_color[1],
+        (1 - alpha / 255.0) *
+        current_color[2] + (alpha / 255.0) * scribble_color[2]
+    ]
+    return result_color
+
+
+def image_mask_max_flow(image, f, b, labels_slic):
+    # segmented_image = np.zeros((image_height, image_width, 3), dtype=np.uint8)
+    segmented_image = np.copy(image)
+    # Assign colors to the connected components
+
+    for node in b:
+        coords_superpixel = np.argwhere(
+            labels_slic == node)
+        for (y, x) in coords_superpixel:
+            try:
+                segmented_image[y, x] = [0, 0, 0]
+                # apply_translucent_scribble(
+                #     segmented_image, x, y, [0, 0, 255], alpha=128)
+            except Exception as e:
+                # print(e)
+                pass
+    for node in f:
+        coords_superpixel = np.argwhere(
+            labels_slic == node)
+        for (y, x) in coords_superpixel:
+            try:
+                segmented_image[y, x] = [255, 255, 255]
+                # apply_translucent_scribble(
+                #     segmented_image, x, y, [0, 0, 255], alpha=128)
+            except Exception as e:
+                # print(e)
+                pass
+    # Display the segmented image
+    # segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB)
+
+    plt.imshow(segmented_image)
+    # plt.imsave('flower_segmentation_dataset/segmented/1.png',
+    #            segmented_image)
+    plt.axis('off')
+    # plt.show()
+    plt.close()
+    return segmented_image
+
+
+def image_segmentation_max_flow(image, f, b, labels_slic):
+    # segmented_image = np.zeros((image_height, image_width, 3), dtype=np.uint8)
+    segmented_image = np.copy(image)
+    # Assign colors to the connected components
+
+    for node in b:
+        coords_superpixel = np.argwhere(
+            labels_slic == node)
+        for (y, x) in coords_superpixel:
+            try:
+                segmented_image[y, x] = apply_translucent_scribble(
+                    segmented_image, x, y, [0, 0, 255], alpha=128)
+            except Exception as e:
+                # print(e)
+                pass
+    # Display the segmented image
+    # segmented_image = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2RGB)
+
+    plt.imshow(segmented_image)
+    # plt.imsave('flower_segmentation_dataset/segmented/1.png',
+    #            segmented_image)
+    plt.axis('off')
+    # plt.show()
+    plt.close()
+    return segmented_image
+
+
+directed_graph1 = convert_to_directed_graph_with_checks1(G1)
+
+
+'''
+Now apply maxflow algorithm to calculate maxflow and 
+partition the image accordingly.
+
+'''
+# Compute the maximum flow from source 's' to sink 't'
+# flow_value, flow_dict = nx.maximum_flow(
+#     directed_graph1, 'background', 'foreground', capacity='weight')
+
+cut_value, (set1, set2) = nx.minimum_cut(directed_graph1,
+                                         'background', 'foreground', capacity='weight')
+
 
 # End time
 end_time3 = time.time()
 
 # Calculate elapsed time
 elapsed_time3 = end_time3 - start_time3
-print("Elapsed time for maximum spanning tree partitioning approach 1:",
+print("Elapsed time for maxflow partitioning approach 1:",
       elapsed_time3, "seconds")
 
 
@@ -115,7 +254,13 @@ print("Total time for first iteration bhattacharyya siilarity coefficient/measur
 # helper2(image, maximum_spanning_tree, labels_slic)
 iteration_count_1 = 0
 
-mask1 = generate_mask1(image, maximum_spanning_tree, labels_slic)
+import numbers
+
+foreground_set = {item for item in set2 if isinstance(item, numbers.Integral)}
+background_set = {item for item in set1 if isinstance(item, numbers.Integral)}
+
+mask1 = image_mask_max_flow(
+    image, foreground_set, background_set, labels_slic)
 plt.imshow(mask1)
 plt.imsave(mask_img_path + '_1_1_bh_' +
            str(iteration_count_1)+ scribbles_from + '.png',
@@ -124,7 +269,8 @@ plt.axis('off')
 # plt.show()
 plt.close()
 
-seg_img = helper31(image, maximum_spanning_tree, labels_slic)
+seg_img = image_segmentation_max_flow(
+    image, foreground_set, background_set, labels_slic)
 # cv2.cvtColor(seg_img, cv2.COLOR_BGR2RGB)
 plt.imshow(seg_img)
 plt.imsave(seg_img_path + '_1_1_bh_' +

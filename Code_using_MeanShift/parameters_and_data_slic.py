@@ -9,9 +9,6 @@ import matplotlib.pyplot as plt
 
 import os
 
-
-
-
 # Define the parent directory
 parent_dir = "./../../results"
 
@@ -65,8 +62,8 @@ scribbling_dimension = 1
 fpoints = []
 bpoints = []
 
-num_superpixels_parameter = 13
-compactness = 10.0
+# num_superpixels_parameter = 13
+# compactness = 10.0
 
 path_to_add_to_get_image = "../../image_data/imagesgrabcut/"
 path_to_add = "../../"
@@ -120,19 +117,32 @@ image_rgb = cv2.cvtColor(image_rgb, cv2.COLOR_BGR2RGB)
 image = np.copy(image_rgb)
 original_image = np.copy(image_rgb)
 print(f'{image_lab.shape[1]} * {image_lab.shape[0]}')
-'''
+
+
+height, width = image.shape[:2]
+
+# # Compute region_size for ~1000 superpixels
+# target_superpixels = 1000
+region_size = 13 #int(np.sqrt((height * width) / target_superpixels))
+region_size = max(region_size, 1)  # avoid zero
+
 s = time.time()
 # Apply SLIC algorithm
+# Create SLIC superpixels
 slic = cv2.ximgproc.createSuperpixelSLIC(
-    image_lab, cv2.ximgproc.SLICO, num_superpixels_parameter, compactness)
-slic.iterate()
+    image_lab,
+    algorithm=cv2.ximgproc.SLICO,
+    region_size=region_size,
+    ruler=10.0  # compactness; tweak between 5–20 if needed
+)
+slic.iterate(10)
 
 # Retrieve the labels of the superpixels
 labels_slic = slic.getLabels()
 
 num_superpixels = slic.getNumberOfSuperpixels()
 t = time.time()
-
+segment_generation_time = (t - s)
 print(t-s)
 print(f'number of superpixels is equal to {num_superpixels}')
 
@@ -172,10 +182,10 @@ result = cv2.addWeighted(image, 0.5, mask_slic_rgb, 0.5, 0)
 plt.imshow(result)
 plt.imsave(superpixel_img_path, result)
 plt.axis('off')
-plt.show()
-'''
+# plt.show()
+plt.close()
 
-s = time.time()
+# s = time.time()
 # Apply mean shift segmentation using quickshift
 # segments = segmentation.quickshift(
 #     image_lab, kernel_size=3, max_dist=6, ratio=0.5)
@@ -187,31 +197,31 @@ s = time.time()
 # )
 
 
-h = image_lab.shape[0]
-w = image_lab.shape[1]
-area = h * w
+# h = image_lab.shape[0]
+# w = image_lab.shape[1]
+# area = h * w
 
-if area <= 160000:       # ~< 400x400
-    segments = segmentation.quickshift(
-        image_lab,
-        kernel_size=2.25,      # ↓ smaller kernel gives finer segments
-        max_dist=3,         # ↓ smaller max_dist increases sensitivity to color/texture
-        ratio=0.5           # ↓ lower ratio favors color over spatial proximity
-    )
-elif area <= 300000:     # ~< 550x550
-    segments = segmentation.quickshift(
-        image_lab,
-        kernel_size=2.5,      # ↓ smaller kernel gives finer segments
-        max_dist=4,         # ↓ smaller max_dist increases sensitivity to color/texture
-        ratio=0.5           # ↓ lower ratio favors color over spatial proximity
-    )
-else:
-    segments = segmentation.quickshift(
-        image_lab,
-        kernel_size=2.5,      # ↓ smaller kernel gives finer segments
-        max_dist=5,         # ↓ smaller max_dist increases sensitivity to color/texture
-        ratio=0.5           # ↓ lower ratio favors color over spatial proximity
-    )
+# if area <= 160000:       # ~< 400x400
+#     segments = segmentation.quickshift(
+#         image_lab,
+#         kernel_size=2.25,      # ↓ smaller kernel gives finer segments
+#         max_dist=3,         # ↓ smaller max_dist increases sensitivity to color/texture
+#         ratio=0.5           # ↓ lower ratio favors color over spatial proximity
+#     )
+# elif area <= 300000:     # ~< 550x550
+#     segments = segmentation.quickshift(
+#         image_lab,
+#         kernel_size=2.5,      # ↓ smaller kernel gives finer segments
+#         max_dist=4,         # ↓ smaller max_dist increases sensitivity to color/texture
+#         ratio=0.5           # ↓ lower ratio favors color over spatial proximity
+#     )
+# else:
+#     segments = segmentation.quickshift(
+#         image_lab,
+#         kernel_size=2.5,      # ↓ smaller kernel gives finer segments
+#         max_dist=5,         # ↓ smaller max_dist increases sensitivity to color/texture
+#         ratio=0.5           # ↓ lower ratio favors color over spatial proximity
+#     )
 
 
 # if image_lab.shape[0] <= 460 and image_lab.shape[1] <= 460:
@@ -230,22 +240,22 @@ else:
 #     )
 
 
-t = time.time()
-segment_generation_time = (t - s)
-print(t-s)
+# t = time.time()
+# segment_generation_time = (t - s)
+# print(t-s)
 # Convert the segmented image to RGB
-segmented_image = color.label2rgb(segments, image, kind='avg')
+# segmented_image = color.label2rgb(segments, image, kind='avg')
 
-image_with_boundaries = segmentation.mark_boundaries(
-    image, segments, color=(1, 0, 0), mode='thick')
-plt.imshow(image_with_boundaries)
-plt.imsave(superpixel_img_path, image_with_boundaries)
-plt.axis('off')
-# plt.show()
-plt.close()
+# image_with_boundaries = segmentation.mark_boundaries(
+#     image, segments, color=(1, 0, 0), mode='thick')
+# plt.imshow(image_with_boundaries)
+# plt.imsave(superpixel_img_path, image_with_boundaries)
+# plt.axis('off')
+# # plt.show()
+# plt.close()
 
-num_superpixels = segments.max() + 1
+# num_superpixels = segments.max() + 1
 print(f'number of superpixels = {num_superpixels}')
-labels_slic = segments
+# labels_slic = segments
 
-result = segmented_image
+# result = segmented_image

@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 import numpy as np
 from fun import get_superpixels_by_pixels
-from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, scribbled_img_path, image_num
-from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
-from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path
+# from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, scribbled_img_path, image_num
+# from parameters_and_data import image_rgb, fpoints, bpoints, labels_slic, result, num_superpixels, image_path, seg_img_path, mask_img_path, num_superpixels_parameter
+# from parameters_and_data import image_rgb, scribbling_dimension, fpoints, bpoints, visualization_image_path, scribbled_img_path, ground_truth_path
 
 
 visualization_image = np.zeros_like(image_rgb)
@@ -179,20 +179,58 @@ for (x, y) in foreground_clicked_points:
     fpoints.append((x, y))
 for (x, y) in background_clicked_points:
     bpoints.append((x, y))
+
+
 plt.imshow(image)
 plt.imsave(scribbled_img_path + '_1.png',
            image)
 plt.axis('off')
 plt.show()
 
+file_path_1 = f"{image_num}.json"
+data1 = {
+    'f': fpoints,
+    'b': bpoints
+}
+with open(path_to_add+ 'scribbled/images/'+file_path_1, 'w') as json_file:
+    json.dump(data1, json_file)
+
+# Convert original RGB image to BGR
+image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+# Make a black copy of the image (same shape, all zeros)
+image_bgr = np.zeros_like(image_bgr)
+
+# Mark foreground pixels as green: (0, 255, 0)
+for (x, y) in foreground_clicked_points:
+    image_bgr[int(y), int(x)] = [0, 255, 0]  # BGR
+
+# Mark background pixels as blue: (255, 0, 0)
+for (x, y) in background_clicked_points:
+    image_bgr[int(y), int(x)] = [255, 0, 0]  # BGR
+
+# Save the modified image as BMP
+scribble_bmp_path = markers_save_path + '_marker.bmp'
+cv2.imwrite(scribble_bmp_path, image_bgr)
+print(f"Saved BMP image with scribbles at: {scribble_bmp_path}")
 
 # Create a new image to visualize the original superpixel and its neighbors
 
+# Load the grabcut box image
+grabcut_box_image = cv2.imread(box_path)
+
+# Create a mask for white pixels (BGR)
+white_mask = np.all(grabcut_box_image == [255, 255, 255], axis=-1)
+
+# Extract coordinates of white pixels as (x, y)
+white_points = np.column_stack(np.where(white_mask))[:, ::-1]  # (x, y)
+
+bpoints = np.vstack([bpoints, white_points])
 
 foreground_superpixels = get_superpixels_by_pixels(labels_slic, list(fpoints))
 background_superpixels = get_superpixels_by_pixels(labels_slic, list(bpoints))
 
-file_path_1 = f"{image_num}.json"
+
 if not os.path.exists('scribbled/flowers/'):
     # Create the folder
     os.makedirs('scribbled/flowers/')
