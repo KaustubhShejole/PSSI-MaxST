@@ -12,7 +12,7 @@ We used two datasets:
 2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
 
-For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE/Our markers i.e., optimal markers for our method can are present in Code_using_MeanShift/our_markers
+For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE/Our markers i.e., optimal markers for our method can are present in our_markers_images250.zip
 
 ---
 
