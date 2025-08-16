@@ -6,7 +6,7 @@ Our segmentation framework begins with low-level segmentation using MeanShift, w
 The integration of the proposed PSSI, MeanShift, and MaxST allows our method to jointly capture color similarity, smoothness, texture, shape, and strong local connectivity. Experimental evaluations on the GrabCut and Images250 datasets demonstrate that our method consistently outperforms current graph-based interactive segmentation methods such as AMOE, OneCut, and SSNCut in terms of segmentation quality, as measured by Jaccard Index (IoU), $F_1$ score, execution time and Mean Error (ME).
 
 We used two datasets:
-1. GrabCut: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
+1. GrabCut: https://github.com/powerhope/AMOE/tree/master/AMOE/imagesgrabcut
 2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
 ---
