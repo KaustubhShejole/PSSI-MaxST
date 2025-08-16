@@ -1,11 +1,13 @@
-# Title: Mean-Shift meets Maximum Spanning Tree: An Efficient Interactive Graph-based Image Segmentation Technique
+# Title: PSSI-MaxST: An Efficient Pixel-Segment Similarity Index Using Intensity and Smoothness Features for Maximum Spanning Tree Based Segmentation
 
-Image segmentation plays a crucial role in applications such as object detection, object identification, tracking, and digital image analysis. Existing deep learning based approaches excel in automation and accuracy but require annotated datasets which may not be available in critical scenarios whereas traditional methods such as edge-based, graph-based, etc. are interpretable but can be computationally rich and low in accuracy. This paper presents a graph based iterative and interactive image segmentation method that can be effectively used in such scenarios where annotated data is lacking while maintaining the accuracy, reducing the computational cost and giving the control of segmentation to the user making it suitable for critical scenarios. In this method, low-level segmentation is used to generate the segments and a segment graph is constructed using an efficient similarity measure between pixel segments and maximum spanning tree-based partitioning is used for segmenting images into foreground and background. Our proposed similarity measure for constructing graph is both time-efficient and effective in segmentation results. The maximum spanning tree captures the strongly connected local neighborhood information and is thus helpful in image segmentation. The experimental results demonstrate that the proposed algorithm outperforms the popular segmentation methods such as YOLO11 in terms of Average IoU and Average F1 score. To the best of our knowledge, this is the first demonstration of interactive image segmentation using segment graph and maximum spanning tree-based partitioning.
+Interactive graph-based segmentation methods partition an image into foreground and background regions with the aid of user inputs. However, existing approaches often suffer from high computational costs, sensitivity to user interactions, and degraded performance when the foreground and background share similar color distributions. A key factor influencing segmentation performance is the similarity measure used for assigning edge weights in the graph.
+To address these challenges, we propose a novel Pixel Segment Similarity Index (PSSI), which leverages the harmonic mean of inter-channel similarities by incorporating both pixel intensity and spatial smoothness features. The harmonic mean effectively penalizes dissimilarities in any individual channel, enhancing robustness. The computational complexity of PSSI is $\mathcal{O}(B)$, where $B$ denotes the number of histogram bins.
+Our segmentation framework begins with low-level segmentation using MeanShift, which effectively captures color, texture, and segment shape. Based on the resulting pixel segments, we construct a pixel-segment graph with edge weights determined by PSSI. For partitioning, we employ the Maximum Spanning Tree (MaxST), which captures strongly connected local neighborhoods beneficial for precise segmentation.
+The integration of the proposed PSSI, MeanShift, and MaxST allows our method to jointly capture color similarity, smoothness, texture, shape, and strong local connectivity. Experimental evaluations on the GrabCut and Images250 datasets demonstrate that our method consistently outperforms current graph-based interactive segmentation methods such as AMOE, OneCut, and SSNCut in terms of segmentation quality, as measured by Jaccard Index (IoU), $F_1$ score, execution time and Mean Error (ME).
 
 We used two datasets:
-1. Oxford 102 flower dataset: https://www.robots.ox.ac.uk/~vgg/data/flowers/102/
-2. EG1800 Portrait Dataset available at: https://drive.google.com/file/d/18xM3jU2dSp1DiDqEM6PVXattNMZvsX4z/view?usp=sharing
-3. MS COCO dataset: https://cocodataset.org/#home
+1. GrabCut: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
+2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
 ---
 
@@ -14,7 +16,7 @@ We used two datasets:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/KaustubhShejole/ImageSegmentationUsingGraphTheory/
+git clone https://github.com/KaustubhShejole/PSSI-MaxST/
 ```
 ```bash
 cd ImageSegmentationUsingGraphTheory/Code_using_MeanShift
@@ -39,82 +41,6 @@ You can verify installation with:
 ```bash
 python -c "import cv2, numpy, matplotlib, skimage"
 ```
-
----
-
-## **Running the Scripts**
-### Step 1: Prepare Input Data
-- Place your images in `../../final_research/flower_segmentation_dataset/flowers/`.
-- Place your corresponding masks in `../../final_research/flower_segmentation_dataset/masks/`.
-
-i.e. 
-
-Place your input images in the following path:
-
-```
-
-├── final_research/
-│   ├── flower_segmentation_dataset/
-│   │   ├── flowers/
-│   │   │   ├── image1.jpg
-│   │   │   ├── image2.jpg
-│   │   │   └── (other images...)
-│   │   ├── masks/
-│   │   │   ├── mask1.jpg
-│   │   │   ├── mask2.jpg
-│   │   │   └── (other masks...)
-├──ImageSegmentationUsingGraphTheory/
-│   ├── ImageSegmentationUsingGraphTheory/
-│   │   ├── Code_using_MeanShift/
-
-You can change the input paths according to your convenience.
-```
-### Step 2: Creating Necessary Output Directories
-The `parameters_and_data.py` script automatically creates the required directories under `results/` if they don't exist:
-
-```
-Code_using_MeanShift/
-├── results/
-│   ├── visualising_superpixels/
-│   ├── analysis/
-│   ├── masks/
-│   ├── scribbled_images/
-│   ├── segmentation_results/
-│   └── (other directories...)
-```
-
-Ensure the images and corresponding masks are named appropriately for consistent segmentation results.
-
-You can customize these directories by editing the `parameters_and_data.py` file.
-
-### Step 3: Run the Main Script
-Run the segmentation and visualization script:
-```bash
-python main.py
-```
-This file runs the process of interactive and iterative image segmentation.
-
-### Step 4: Visualize Outputs
-Results are saved in the following locations:
-- **Superpixel/Segments Visualizations**: `results/visualising_superpixels/flowers/`
-- **Scribbled Images**: `results/scribbled_images/flowers/`
-- **Segmentation Results**: `results/segmentation_results/flowers/`
-
-Use any image viewer or Matplotlib to inspect the outputs.
-
----
-
-## **Key Parameters**
-The kernel_size 
-The max_dist 
-The ratio 
-- `kernel_size`: determines the resolution or granularity of segmentation. (3)
-- `max_dist`: governs the threshold for segment connectivity. (6)
-- `ratio`: controls the relative importance of spatial proximity versus color similarity. (0.6)
-
-You can modify these in `parameters_and_data.py`.
-
----
 
 ## **Troubleshooting**
 
