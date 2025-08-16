@@ -11,6 +11,10 @@ We used two datasets:
 1. GrabCut: https://github.com/powerhope/AMOE/tree/master/AMOE/imagesgrabcut
 2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
+
+For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE/
+
+Our markers i.e., optimal markers for our method can are present in Code_using_MeanShift/our_markers
 ---
 
 ## **Setup the project**
