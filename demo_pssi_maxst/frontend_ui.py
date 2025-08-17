@@ -29,7 +29,7 @@ image = np.zeros((image_rgb.shape[0], image_rgb.shape[1], 3), dtype=np.uint8)
 
 background_clicked_points = []
 foreground_clicked_points = []
-scribble_color = [0, 0, 255]
+scribble_color = [0, 255, 0]
 
 
 def init(image):
@@ -155,7 +155,7 @@ fig.canvas.mpl_connect('motion_notify_event', lambda event: on_move(
 plt.show()
 
 # print("background")
-scribble_color = [0, 255, 0]
+scribble_color = [0, 0, 255]
 
 fig1, ax1 = plt.subplots()
 ax1.set_title("Click background points")

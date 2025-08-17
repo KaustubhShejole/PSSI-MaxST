@@ -8,4 +8,4 @@ FNR: 0.0008507244450352253
 TNR: 0.9970625720701584
 Error Rate: 0.0022833333333333334
 
-Total Time taken (Iteration 1) in seconds: 0.7780647277832031
+Total Time taken (Iteration 1) in seconds: 0.7372519969940186
