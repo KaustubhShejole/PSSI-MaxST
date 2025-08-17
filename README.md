@@ -67,7 +67,7 @@ python main.py images/0_0_547.jpg
 |-------------|-------------------|
 | ![Input Image](demo_pssi_maxst/images/0_0_547.jpg) | ![Ground Truth](demo_pssi_maxst/GT/0_0_547.bmp) |
 
-| Scribbles (green: background, blue: foreground) | Superpixel Visualisation |
+| Scribbles (green: foreground, blue: background) | Superpixel Visualisation |
 |-------------------------------------------------|--------------------------|
 | ![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png) | ![Superpixels](demo_pssi_maxst/visualising_superpixels/0_0_547.png) |
 
