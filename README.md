@@ -63,34 +63,15 @@ python main.py images/0_0_547.jpg
 
 ---
 
-### 1. Input Image
-The raw input image used for segmentation.  
+| Input Image | Ground Truth (GT) |
+|-------------|-------------------|
+| ![Input Image](demo_pssi_maxst/images/0_0_547.jpg) | ![Ground Truth](demo_pssi_maxst/GT/0_0_547.bmp) |
 
-![Input Image](demo_pssi_maxst/images/0_0_547.jpg)
+| Scribbles (green: background, blue: foreground) | Superpixel Visualisation |
+|-------------------------------------------------|--------------------------|
+| ![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png) | ![Superpixels](demo_pssi_maxst/visualising_superpixels/0_0_547.png) |
 
----
-
-### 2. Ground Truth (GT)
-The corresponding ground truth mask for evaluation.  
-
-![Ground Truth](demo_pssi_maxst/GT/0_0_547.bmp)
-
----
-
-### 3. Scribbles / Markers
-The user-provided scribbles (green: background, blue: foreground)  
-
-![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png)
----
-
-### 4. Superpixel Visualisation
-Superpixel partitioning used in PSSI-MaxST.  
-
-![Superpixels](demo_pssi_maxst/visualising_superpixels/0_0_547.png)
-
----
-
-### 5. Segmentation Result
+### Segmentation Result
 The final segmentation obtained using PSSI-MaxST.  
 
 | Predicted Mask | Segmented Output |
@@ -99,7 +80,7 @@ The final segmentation obtained using PSSI-MaxST.
 
 ---
 
-### 6. Quantitative Results
+### Quantitative Results
 The text file below reports IoU, Recall, Precision, F1-Score, Accuracy, and execution time.  
 
 Full text file: [Metrics](demo_pssi_maxst/text_results/0_0_547_1_1.txt)
