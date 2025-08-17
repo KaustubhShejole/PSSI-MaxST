@@ -78,12 +78,9 @@ The corresponding ground truth mask for evaluation.
 ---
 
 ### 3. Scribbles / Markers
-The user-provided scribbles and marker map for weak supervision.  
+The user-provided scribbles (green: background, blue: foreground)  
 
-| Scribbled Image | Marker Map |
-|-----------------|------------|
-| ![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png) | ![Marker](demo_pssi_maxst/scribbles/0_0_547_marker.bmp) |
-
+![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png)
 ---
 
 ### 4. Superpixel Visualisation
