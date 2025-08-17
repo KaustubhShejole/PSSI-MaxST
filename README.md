@@ -47,6 +47,48 @@ You can verify installation with:
 python -c "import cv2, numpy, matplotlib, skimage"
 ```
 
+
+## 🔬 Demo: PSSI-MaxST Segmentation
+
+We provide a demo pipeline to show how **PSSI-MaxST** operates on sample images.  
+The demo includes input images, ground truth (GT), scribbles, intermediate results, and final segmentation metrics.
+
+
+To run the demo on an image:
+
+```bash
+cd demo_pssi_maxst
+python main.py images/0_0_547.jpg
+```
+
+---
+
+| Input Image | Ground Truth (GT) |
+|-------------|-------------------|
+| ![Input Image](demo_pssi_maxst/images/0_0_547.jpg) | ![Ground Truth](demo_pssi_maxst/GT/0_0_547.bmp) |
+
+| Scribbles (green: background, blue: foreground) | Superpixel Visualisation |
+|-------------------------------------------------|--------------------------|
+| ![Scribbled](demo_pssi_maxst/scribbles/0_0_547_scribbled.png) | ![Superpixels](demo_pssi_maxst/visualising_superpixels/0_0_547.png) |
+
+### Segmentation Result
+The final segmentation obtained using PSSI-MaxST.  
+
+| Predicted Mask | Segmented Output |
+|----------------|------------------|
+| ![Mask](demo_pssi_maxst/results/mask_0_0_547_0_demo.png) | ![Segmentation](demo_pssi_maxst/results/segmentation_0_0_547_0_demo.png) |
+
+---
+
+### Quantitative Results
+The text file below reports IoU, Recall, Precision, F1-Score, Accuracy, and execution time.  
+
+Full text file: [Metrics](demo_pssi_maxst/text_results/0_0_547_1_1.txt)
+
+This demo demonstrates how **PSSI-MaxST** works end-to-end, from input to evaluation, with both qualitative and quantitative validation.
+
+
+
 ## **Troubleshooting**
 
 - Check directory paths in `parameters_and_data.py`.
