@@ -80,19 +80,23 @@ The final segmentation obtained using PSSI-MaxST.
 
 ---
 
-### Quantitative Results 
-IoU: 0.9927622368386296
-Recall (TPR): 0.9991492755549648
-FPR: 0.002937427929841597
-Precision: 0.9936021150033046
-F1 Score: 0.9963679745493107
-Accuracy: 0.9977166666666667
-FNR: 0.0008507244450352253
-TNR: 0.9970625720701584
-Error Rate: 0.0022833333333333334
+### Quantitative Results
 
-Total Time taken (Iteration 1) in seconds: 0.7372519969940186
+The segmentation performance is evaluated using standard metrics:
 
+| Metric        | Value      |
+|---------------|------------|
+| IoU           | 0.9928     |
+| Recall (TPR)  | 0.9991     |
+| FPR           | 0.0029     |
+| Precision     | 0.9936     |
+| F1 Score      | 0.9964     |
+| Accuracy      | 0.9977     |
+| FNR           | 0.0009     |
+| TNR           | 0.9971     |
+| Error Rate    | 0.0023     |
+
+⏱ **Total Time (Iteration 1):** 0.737 sec  
 
 Full text file: [Metrics](demo_pssi_maxst/text_results/0_0_547_1_1.txt)
 
