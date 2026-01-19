@@ -12,7 +12,8 @@ We used two datasets:
 2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
 
-For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE/Our markers i.e., optimal markers for our method can are present in our_markers_images250.zip
+For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE
+Our markers i.e., optimal markers for our method can are present in our_markers_images250.zip
 
 ---
 
@@ -101,6 +102,30 @@ The segmentation performance is evaluated using standard metrics:
 Full text file: [Metrics](demo_pssi_maxst/text_results/0_0_547_1_1.txt)
 
 This demo demonstrates how **PSSI-MaxST** works end-to-end, from input to evaluation, with both qualitative and quantitative validation.
+
+
+
+## Code Related to Experimental Analysis
+
+The experimental analysis is based on the MATLAB implementation provided in the **AMOE** package available at:
+
+- https://github.com/powerhope/AMOE
+
+This repository facilitates experiments with **AMOE** (Augmented Min-cut with Object Evidence) and **OneCut**, and we include **SSNCut** within the same framework for comparison.
+
+### Demo Scripts
+
+The following demo files can be used to run the respective methods directly:
+
+- `demo_OneCut.m` — Demonstration script for the **OneCut** method  
+- `demo_AMOE.m` — Demonstration script for the **AMOE** method  
+- `demo_SSNCut.m` — Demonstration script for the **SSNCut** method  
+
+Each script loads the required data, configures the corresponding model, and executes the segmentation pipeline on a dataset.
+
+### Timing Evaluation
+
+In addition to the original demo scripts, we have included **time calculation files** to measure the computational cost of each method. These files record execution time for fair runtime comparison across OneCut, AMOE, and SSNCut during experimental evaluation.
 
 
 
