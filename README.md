@@ -109,9 +109,9 @@ This demo demonstrates how **PSSI-MaxST** works end-to-end, from input to evalua
 
 The experimental analysis is based on the MATLAB implementation provided in the **AMOE** package available at:
 
-- https://github.com/powerhope/AMOE
-
-This repository facilitates experiments with **AMOE** (Augmented Min-cut with Object Evidence) and **OneCut**, and we include **SSNCut** within the same framework for comparison.
+- https://github.com/powerhope/AMOE.
+The original package needs to be replicated first and then these scripts work upon it.
+This folder (`matlab_experiment_files`) facilitates experiments with **AMOE** (Augmented Min-cut with Object Evidence) and **OneCut**, and we include **SSNCut** within the same framework for comparison.
 
 ### Demo Scripts
 
