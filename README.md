@@ -6,13 +6,26 @@ To address these challenges, we propose a novel Pixel Segment Similarity Index (
 Our segmentation framework begins with low-level segmentation using MeanShift, which effectively captures color, texture, and segment shape. Based on the resulting pixel segments, we construct a pixel-segment graph with edge weights determined by PSSI. For partitioning, we employ the Maximum Spanning Tree (MaxST), which captures strongly connected local neighborhoods beneficial for precise segmentation.
 The integration of the proposed PSSI, MeanShift, and MaxST allows our method to jointly capture color similarity, smoothness, texture, shape, and strong local connectivity. Experimental evaluations on the GrabCut and Images250 datasets demonstrate that our method consistently outperforms current graph-based interactive segmentation methods such as AMOE, OneCut, and SSNCut in terms of segmentation quality, as measured by Jaccard Index (IoU), $F_1$ score, execution time and Mean Error (ME).
 
+
+## Evaluation Setup
+
 We used two datasets:
 1. GrabCut: https://github.com/powerhope/AMOE/tree/master/AMOE/imagesgrabcut
 2. Images250: https://github.com/powerhope/AMOE/tree/master/AMOE/images250
 
+For evaluation, the **scribbles** used by **AMOE**, **OneCut**, and **SSNCut** are obtained from the official repository:
 
-For evaluation the scribbles used can be found at: https://github.com/powerhope/AMOE
-Our markers i.e., optimal markers for our method can are present in our_markers_images250.zip
+- https://github.com/powerhope/AMOE
+
+These scribbles are used consistently across all baseline methods to ensure a fair comparison.
+
+### Markers for the Proposed Method
+
+The **optimal markers** used by our proposed method are provided separately. They are available in the archive:
+
+- `our_markers_images250.zip`
+
+This archive contains the marker annotations corresponding to the *images250* dataset and is used exclusively for evaluating our method.
 
 ---
 
