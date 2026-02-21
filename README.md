@@ -44,8 +44,14 @@ cd ImageSegmentationUsingGraphTheory/Code_using_MeanShift
 ### Step 2: Install Requirements
 Install the required Python packages listed in `requirements.txt`:
 
+Requires-Python >=3.6,<3.13
+
 ```bash
+py install 3.11
+py -3.11 -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
+pip install scikit-image
 ```
 
 ### Step 3: Verify Dependencies
