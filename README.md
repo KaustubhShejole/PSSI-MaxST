@@ -51,6 +51,7 @@ py install 3.11
 py -3.11 -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+pip install scikit-image
 ```
 
 ### Step 3: Verify Dependencies
