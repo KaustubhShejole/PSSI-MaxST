@@ -109,6 +109,8 @@ ensure_dir(scribbled_img_path2)
 ensure_dir(visualization_image_path)
 ensure_dir(seg_img_path)
 ensure_dir(path_to_add + "scribbled/images/"+ image_num + ".json")
+ensure_dir(path_to_add + "results/masks/flowers/" + image_num + ".png")
+ensure_dir(only_segmentation_path + '/1/'+image_num + '.png')
 
 image_rgb = cv2.imread(image_path)
 num_pixels = image_rgb.shape[0] * image_rgb.shape[1]
