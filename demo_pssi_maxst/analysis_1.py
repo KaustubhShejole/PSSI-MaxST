@@ -220,8 +220,8 @@ plt.close()
 
 elapsed_time_4_list = []
 while True:
-    # continue_response = ask_to_continue()
-    continue_response = False
+    continue_response = ask_to_continue()
+    # continue_response = False
     if continue_response:
         '''
         code of another iteration

@@ -7,7 +7,7 @@ import numpy as np
 # Load your binary segmented image and ground truth image here
 segmented_image = cv2.imread(
     'results/mask_' + str(image_num) + '_' +
-    str(iteration_count_1) + '_' + scribbles_from + '.png', cv2.IMREAD_GRAYSCALE)
+           str(iteration_count_1) + '_' + scribbles_from + '.png', cv2.IMREAD_GRAYSCALE)
 ground_truth = cv2.imread(ground_truth_path,
                           cv2.IMREAD_GRAYSCALE)  # Convert to grayscale
 our_mask = cv2.imread(mask_img_path + '_1_1_'+str(iteration_count_1)+ scribbles_from + '.png')
