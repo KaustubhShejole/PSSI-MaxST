@@ -89,6 +89,26 @@ scribbled_img_path2 = path_to_add + 'results/'+'scribbled_images1/flowers/' + im
 visualization_image_path = path_to_add + 'results/' + \
     'visualising_superpixels/flowers/'+ image_num + '.png'
 seg_img_path = path_to_add + 'results/'+'segmentation_results/flowers/' + image_num
+
+# function to ensure directory exists
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if directory != "":
+        os.makedirs(directory, exist_ok=True)
+
+
+# ensure all directories exist
+ensure_dir(superpixel_img_path)
+ensure_dir(mask_img_path)
+ensure_dir(mask_img_path2)
+ensure_dir(seg_img_path2)
+ensure_dir(only_segmentation_path)
+ensure_dir(markers_save_path)
+ensure_dir(scribbled_img_path)
+ensure_dir(scribbled_img_path2)
+ensure_dir(visualization_image_path)
+ensure_dir(seg_img_path)
+
 image_rgb = cv2.imread(image_path)
 num_pixels = image_rgb.shape[0] * image_rgb.shape[1]
 
