@@ -1,5 +1,8 @@
 This work presents an improved graph-based interactive image segmentation technique that employs an efficient pixel–segment similarity measure for edge-weight assignment. The proposed measure jointly incorporates intensity and smoothness features, leading to more accurate and coherent segmentation results. The work was carried out by **Mr. Kaustubh S. Shejole** ([homepage](https://www.cse.iitb.ac.in/~kaustubhshejole/)) under the guidance of **Prof. Gaurav Mishra** ([profile](https://vnit.ac.in/engineering/cse/dr-gaurav-mishra/)) at **Visvesvaraya National Institute of Technology (VNIT), Nagpur** ([VNIT](https://vnit.ac.in/)).
 
+
+[Paper Link](https://arxiv.org/abs/2601.11654)
+
 # Title: PSSI-MaxST: An Efficient Pixel-Segment Similarity Index Using Intensity and Smoothness Features for Maximum Spanning Tree Based Segmentation
 
 Interactive graph-based segmentation methods partition an image into foreground and background regions with the aid of user inputs. However, existing approaches often suffer from high computational costs, sensitivity to user interactions, and degraded performance when the foreground and background share similar color distributions. A key factor influencing segmentation performance is the similarity measure used for assigning edge weights in the graph.
